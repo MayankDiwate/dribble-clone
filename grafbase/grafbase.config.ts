@@ -1,9 +1,9 @@
-import { auth, config, graph } from "@grafbase/sdk";
+import { config, graph } from "@grafbase/sdk";
 
 const g = graph.Standalone();
 
 // @ts-ignore
-const user = g.model("User", {
+export const user = g.model("User", {
   name: g.string().length({ min: 2, max: 20 }),
   email: g.string().unique(),
   avatarUrl: g.url(),
@@ -13,7 +13,7 @@ const user = g.model("User", {
 });
 
 // @ts-ignore
-const project = g.model("Project", {
+export const project = g.model("Project", {
   title: g.string().length({ min: 3 }),
   description: g.string(),
   image: g.url(),
@@ -25,20 +25,8 @@ const project = g.model("Project", {
 
 user.projects = g.ref(project);
 
-const jwt = auth.JWT({
-  issuer: "grafbase",
-  secret: g.env("NEXTAUTH_SECRET"),
-});
-
 config({
-  schema: g,
-  auth: {
-    providers: [jwt],
-    rules: (rules) => rules.private(),
-  },
-});
-config({
-  schema: g,
+  graph: g,
   auth: {
     providers: [project],
     rules: (rules) => {
@@ -46,8 +34,9 @@ config({
     },
   },
 });
+
 config({
-  schema: g,
+  graph: g,
   auth: {
     providers: [user],
     rules: (rules) => {
@@ -56,3 +45,4 @@ config({
     },
   },
 });
+
